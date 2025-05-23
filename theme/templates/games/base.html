@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}DGBL Dashboard{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/alpinejs" defer></script>
+  <style>
+    .rainbow-text {
+      background: linear-gradient(to right, #f87171, #fbbf24, #34d399, #60a5fa, #a78bfa, #f472b6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-size: 200% auto;
+      animation: rainbow 4s linear infinite;
+    }
+
+    @keyframes rainbow {
+      0% { background-position: 0% }
+      100% { background-position: 100% }
+    }
+
+    @keyframes bounce-slow {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .animate-bounce-slow {
+      animation: bounce-slow 3s infinite;
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-tr from-yellow-100 via-pink-100 to-blue-100 min-h-screen flex flex-col font-sans text-gray-800">
+
+  <!-- Navbar -->
+  <nav class="bg-white shadow-lg py-4 px-6 flex justify-between items-center z-10">
+    <div class="text-3xl font-extrabold rainbow-text animate-pulse">DGBL</div>
+    <ul class="flex space-x-6 text-lg font-semibold text-blue-600">
+      <li><a href="/profile/" class="hover:text-pink-600 transition-transform transform hover:scale-110">Profile</a></li>
+      <li><a href="/games/" class="hover:text-pink-600 transition-transform transform hover:scale-110">Game List</a></li>
+      <li><a href="/logout/" class="hover:text-red-600 transition-transform transform hover:scale-110">Logout</a></li>
+    </ul>
+  </nav>
+
+  <!-- Page Content -->
+  <main class="flex-1 w-full max-w-6xl mx-auto px-4 py-10 z-0">
+    {% block content %}
+    {% endblock %}
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white text-center py-4 text-sm text-blue-600 shadow-inner">
+    &copy; 2025 DGBL - Digital Game-Based Learning for Primary Schools in Ghana.
+  </footer>
+
+  <!-- Animated Balloons (Fun Floating Element) -->
+  <div class="fixed bottom-0 left-0 w-full pointer-events-none z-0">
+    <div class="animate-bounce-slow text-5xl text-yellow-400 text-center select-none">
+      🎈 🎉 🎈
+    </div>
+  </div>
+
+</body>
+</html>
+
+
+
+
+{% comment %} 
+<!-- multiple_choice_quiz.html -->
+{% extends 'base.html' %}
+{% block title %}Multiple Choice Quiz{% endblock %}
+{% block content %}
+<div class="max-w-xl w-full bg-white p-6 rounded-2xl shadow-xl" x-data="{ selected: null, correct: 2, showResult: false }">
+  <h2 class="text-xl font-bold mb-4">What is the boiling point of water?</h2>
+  <template x-for="(option, index) in ['90°C', '80°C', '100°C', '70°C']" :key="index">
+    <button @click="selected = index; showResult = true"
+            :class="{'bg-green-300': showResult && index === correct, 'bg-red-200': showResult && selected === index && selected !== correct}"
+            class="block w-full text-left px-4 py-2 rounded mb-2 border hover:bg-blue-100">
+      <span x-text="option"></span>
+    </button>
+  </template>
+  <div x-show="showResult" class="mt-4 text-lg font-semibold" x-text="selected === correct ? 'Correct! 🎉' : 'Oops! Try again.'"></div>
+</div>
+{% endblock %}
+
+
+<!-- spelling_game.html -->
+{% extends 'base.html' %}
+{% block title %}Spelling Game{% endblock %}
+{% block content %}
+<div class="max-w-lg w-full bg-white p-6 rounded-2xl shadow-xl" x-data="{ word: 'gravity', guess: '', correct: false }">
+  <h2 class="text-xl font-bold mb-4">Spell the force that keeps us on the ground 🌍</h2>
+  <input type="text" x-model="guess" class="w-full border p-2 rounded text-lg" placeholder="Type your answer...">
+  <button @click="correct = (guess.toLowerCase() === word)" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+    Submit
+  </button>
+  <div x-show="guess" class="mt-4 text-lg font-semibold" x-text="correct ? 'Great job! ✅' : 'Try again!'" :class="correct ? 'text-green-500' : 'text-red-500'"></div>
+</div>
+{% endblock %}
+
+
+<!-- matching_pairs.html -->
+{% extends 'base.html' %}
+{% block title %}Matching Pairs Game{% endblock %}
+{% block content %}
+<div class="grid grid-cols-4 gap-4 max-w-xl w-full" x-data="matchingGame()">
+  <template x-for="(card, i) in cards" :key="i">
+    <button @click="flipCard(i)" class="w-full h-24 bg-blue-200 rounded-xl shadow-lg text-xl font-bold flex items-center justify-center"
+            :class="{ 'bg-green-300': card.matched }">
+      <span x-text="card.flipped || card.matched ? card.content : '?'" class="text-2xl"></span>
+    </button>
+  </template>
+</div>
+<script>
+function matchingGame() {
+  const words = ['Sun', 'Energy', 'Gravity', 'Water'];
+  const pairs = [...words, ...words].map(word => ({ content: word, flipped: false, matched: false }));
+  pairs.sort(() => Math.random() - 0.5);
+
+  return {
+    cards: pairs,
+    flippedCards: [],
+    flipCard(index) {
+      const card = this.cards[index];
+      if (card.flipped || card.matched || this.flippedCards.length === 2) return;
+      card.flipped = true;
+      this.flippedCards.push(index);
+
+      if (this.flippedCards.length === 2) {
+        const [i1, i2] = this.flippedCards;
+        const c1 = this.cards[i1], c2 = this.cards[i2];
+        if (c1.content === c2.content) {
+          c1.matched = c2.matched = true;
+        } else {
+          setTimeout(() => {
+            c1.flipped = c2.flipped = false;
+          }, 1000);
+        }
+        this.flippedCards = [];
+      }
+    }
+  }
+}
+</script>
+{% endblock %}
+
+
+<!-- drag_and_drop_puzzle.html -->
+{% extends 'base.html' %}
+{% block title %}Drag and Drop Puzzle{% endblock %}
+{% block content %}
+<div class="max-w-4xl mx-auto grid grid-cols-2 gap-8">
+  <div class="bg-white p-4 rounded shadow-xl">
+    <h2 class="text-lg font-bold mb-2">Drag the item to the correct category</h2>
+    <div class="flex flex-wrap gap-2" id="draggables">
+      <div class="draggable bg-yellow-300 p-2 rounded cursor-move" draggable="true">Thermometer</div>
+      <div class="draggable bg-green-300 p-2 rounded cursor-move" draggable="true">Beaker</div>
+      <div class="draggable bg-pink-300 p-2 rounded cursor-move" draggable="true">Volcano</div>
+      <div class="draggable bg-purple-300 p-2 rounded cursor-move" draggable="true">Magnet</div>
+    </div>
+  </div>
+  <div class="bg-white p-4 rounded shadow-xl">
+    <h3 class="font-semibold mb-2">Science Tools</h3>
+    <div class="dropzone min-h-[100px] border-2 border-dashed rounded p-2"></div>
+    <h3 class="font-semibold mt-4 mb-2">Natural Phenomena</h3>
+    <div class="dropzone min-h-[100px] border-2 border-dashed rounded p-2"></div>
+  </div>
+</div>
+<script>
+document.querySelectorAll('.draggable').forEach(el => {
+  el.addEventListener('dragstart', e => {
+    e.dataTransfer.setData('text/plain', e.target.textContent);
+  });
+});
+
+document.querySelectorAll('.dropzone').forEach(zone => {
+  zone.addEventListener('dragover', e => e.preventDefault());
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    const text = e.dataTransfer.getData('text/plain');
+    const item = document.createElement('div');
+    item.textContent = text;
+    item.className = 'bg-blue-100 p-2 rounded mt-1';
+    zone.appendChild(item);
+  });
+});
+</script>
+{% endblock %} {% endcomment %}

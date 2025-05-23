@@ -1,0 +1,52 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>DGBL - Digital Game-Based Platform</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Tailwind via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Optional: Custom theme config -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#4f46e5', // Indigo-600
+            secondary: '#16a34a', // Green-600
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col">
+
+  <!-- Header / Navigation -->
+  <header class="bg-white shadow">
+    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+      <a href="{% url 'home' %}" class="text-2xl font-bold text-primary">🎓 DGBL Platform</a>
+      <nav class="space-x-4 text-sm font-medium">
+        <a href="{% url 'home' %}" class="text-gray-700 hover:text-primary">Home</a>
+        <a href="{% url 'login' %}" class="text-gray-700 hover:text-primary">Login</a>
+        <a href="{% url 'register' %}" class="bg-primary text-white px-4 py-2 rounded hover:bg-indigo-700">Register</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="flex-grow">
+    {% block content %}
+    {% endblock %}
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white shadow mt-12">
+    <div class="container mx-auto px-4 py-6 text-center text-sm text-gray-500">
+      &copy; {{ now|date:"Y" }} DGBL Ghana. Built with ❤️ for education.
+    </div>
+  </footer>
+
+</body>
+</html>

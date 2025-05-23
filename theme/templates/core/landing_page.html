@@ -1,0 +1,57 @@
+<!-- templates/theme/landing.html -->
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block content %}
+<section class="bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 text-white min-h-screen flex items-center justify-center">
+  <div class="max-w-6xl mx-auto px-6 lg:px-12 py-16 text-center">
+    <h1 class="text-4xl lg:text-6xl font-bold mb-6">Welcome to the Future of Learning</h1>
+    <p class="text-lg lg:text-2xl mb-8">Empowering Primary School Students in Ghana with Fun, Interactive, and Educational Games</p>
+    <div class="space-x-4">
+      <a href="" class="bg-white text-indigo-700 font-semibold px-6 py-3 rounded-xl shadow-lg hover:bg-indigo-100 transition duration-300">Get Started</a>
+      <a href="#features" class="bg-indigo-800 px-6 py-3 rounded-xl shadow-lg hover:bg-indigo-900 transition duration-300">Learn More</a>
+    </div>
+  </div>
+</section>
+
+<section id="features" class="py-20 bg-white text-gray-800">
+  <div class="max-w-6xl mx-auto px-6 lg:px-12 text-center">
+    <h2 class="text-3xl lg:text-4xl font-bold mb-12">Why Choose Our Platform?</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+      <div class="bg-gray-100 p-6 rounded-2xl shadow hover:shadow-lg transition duration-300">
+        <div class="text-indigo-600 text-5xl mb-4">🎮</div>
+        <h3 class="text-xl font-bold mb-2">Engaging Games</h3>
+        <p>Gamified lessons that make learning math, science, and reading fun and effective.</p>
+      </div>
+      <div class="bg-gray-100 p-6 rounded-2xl shadow hover:shadow-lg transition duration-300">
+        <div class="text-indigo-600 text-5xl mb-4">👩🏽‍🏫</div>
+        <h3 class="text-xl font-bold mb-2">Teacher Tools</h3>
+        <p>Classroom management, progress tracking, and customizable content for educators.</p>
+      </div>
+      <div class="bg-gray-100 p-6 rounded-2xl shadow hover:shadow-lg transition duration-300">
+        <div class="text-indigo-600 text-5xl mb-4">📊</div>
+        <h3 class="text-xl font-bold mb-2">Analytics & Feedback</h3>
+        <p>Insights into student learning patterns, mastery levels, and recommended actions.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="bg-indigo-50 py-20">
+  <div class="max-w-6xl mx-auto px-6 lg:px-12 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+    <img src="{% static 'images/learning.svg' %}" alt="Interactive Learning" class="w-full max-h-[400px] object-contain">
+    <div>
+      <h2 class="text-3xl font-bold text-indigo-800 mb-4">Built for Ghana’s Classrooms</h2>
+      <p class="text-lg mb-6 text-gray-700">Localized content, low-bandwidth optimization, and intuitive interfaces designed for young learners and rural environments.</p>
+      <a href="#" class="bg-indigo-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-indigo-700 transition duration-300">Join the Movement</a>
+    </div>
+  </div>
+</section>
+
+<section class="bg-gradient-to-br from-pink-500 to-indigo-700 text-white py-16 text-center">
+  <h2 class="text-3xl font-bold mb-4">Ready to Get Started?</h2>
+  <p class="text-lg mb-8">Create an account and start transforming the way your students learn.</p>
+  <a href="#" class="bg-white text-indigo-700 px-6 py-3 rounded-xl font-semibold hover:bg-indigo-100 transition duration-300">Sign Up Free</a>
+</section>
+
+{% endblock %}
