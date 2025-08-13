@@ -1,0 +1,19 @@
+{% extends 'games/base.html' %}
+{% block title %}My Quiz Scores{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto py-6">
+  <h2 class="text-2xl font-bold text-center mb-4 text-blue-700">📊 My Quiz Scores</h2>
+  <ul class="bg-white rounded-lg shadow-md divide-y divide-gray-200">
+    {% for score in scores %}
+      <li class="p-4 flex justify-between">
+        <span>{{ score.category }}</span>
+        <span>{{ score.score }}/10</span>
+        <span class="text-sm text-gray-500">{{ score.date_played|date:"M d, Y H:i" }}</span>
+      </li>
+    {% empty %}
+      <li class="p-4 text-center text-gray-500">No scores yet.</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}

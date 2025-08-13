@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>{% block title %}DGBL Dashboard{% endblock %}</title>
+  <title>{% block title %} STEM EDUCATION - Dashboard{% endblock %}</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/alpinejs" defer></script>
   <style>
@@ -34,11 +34,11 @@
 
   <!-- Navbar -->
   <nav class="bg-white shadow-lg py-4 px-6 flex justify-between items-center z-10">
-    <div class="text-3xl font-extrabold rainbow-text animate-pulse">DGBL</div>
+    <div class="text-3xl font-extrabold rainbow-text animate-pulse">STEM EDUCATION</div>
     <ul class="flex space-x-6 text-lg font-semibold text-blue-600">
-      <li><a href="/profile/" class="hover:text-pink-600 transition-transform transform hover:scale-110">Profile</a></li>
-      <li><a href="/games/" class="hover:text-pink-600 transition-transform transform hover:scale-110">Game List</a></li>
-      <li><a href="/logout/" class="hover:text-red-600 transition-transform transform hover:scale-110">Logout</a></li>
+      <li><a href="{% url 'game_list' %}" class="hover:text-pink-600 transition-transform transform hover:scale-110">📋 Game List</a></li>
+      <li><a href="{% url 'my_scores' %}" class="hover:text-pink-600 transition-transform transform hover:scale-110">📈 My Score</a></li>
+      <li><a href="{% url 'logout' %}" class="hover:text-red-600 transition-transform transform hover:scale-110">🚪➡️ Logout</a></li>
     </ul>
   </nav>
 
@@ -50,7 +50,7 @@
 
   <!-- Footer -->
   <footer class="bg-white text-center py-4 text-sm text-blue-600 shadow-inner">
-    &copy; 2025 DGBL - Digital Game-Based Learning for Primary Schools in Ghana.
+    &copy; 2025 - Digital Game-Based Plaform for Primary Schools in Ghana.
   </footer>
 
   <!-- Animated Balloons (Fun Floating Element) -->

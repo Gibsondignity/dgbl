@@ -1,4 +1,5 @@
 {% extends 'games/base.html' %}
+{% load static %}
 {% block title %}STEM Games{% endblock %}
 
 {% block content %}
@@ -12,15 +13,15 @@
       <p class="text-4xl">❓</p>
       <h3 class="text-xl font-bold text-yellow-700">Quiz</h3>
     </a>
-    <a href="?category=spelling" class="bg-green-100 hover:bg-green-200 p-6 rounded-2xl text-center shadow-md transition">
+    <a href="{% url 'spelling_game' %}?spelling_game=spelling" class="bg-green-100 hover:bg-green-200 p-6 rounded-2xl text-center shadow-md transition">
       <p class="text-4xl">📝</p>
       <h3 class="text-xl font-bold text-green-700">Spelling</h3>
     </a>
-    <a href="?category=matching" class="bg-purple-100 hover:bg-purple-200 p-6 rounded-2xl text-center shadow-md transition">
+    <a href="{% url 'matching_game' %}?matching_game=matching" class="bg-purple-100 hover:bg-purple-200 p-6 rounded-2xl text-center shadow-md transition">
       <p class="text-4xl">🧠</p>
       <h3 class="text-xl font-bold text-purple-700">Matching</h3>
     </a>
-    <a href="?category=puzzle" class="bg-pink-100 hover:bg-pink-200 p-6 rounded-2xl text-center shadow-md transition">
+    <a href="{% url 'puzzle_game' %}?category=puzzle" class="bg-pink-100 hover:bg-pink-200 p-6 rounded-2xl text-center shadow-md transition">
       <p class="text-4xl">🧩</p>
       <h3 class="text-xl font-bold text-pink-700">Puzzle</h3>
     </a>

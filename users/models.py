@@ -7,7 +7,6 @@ from django.db import models
 class User(AbstractUser):
     USER_TYPES = (
         ('student', 'Student'),
-        ('teacher', 'Teacher'),
         ('admin', 'Admin'),
     )
     user_type = models.CharField(max_length=10, choices=USER_TYPES)

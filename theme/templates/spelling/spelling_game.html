@@ -1,0 +1,83 @@
+{% extends 'games/base.html' %}
+{% block title %}Spelling Game{% endblock %}
+
+{% block content %}
+<div class="max-w-xl mx-auto px-4 py-6 text-center">
+  <h2 class="text-2xl font-bold text-purple-700 mb-4">📝 Spelling Challenge</h2>
+  <p class="text-gray-600">Can you spell the word correctly?</p>
+
+  <div class="mt-6" id="spelling-image"></div>
+
+  <input type="text" id="spelling-input" class="mt-4 px-4 py-2 border border-gray-300 rounded w-full text-center text-lg" placeholder="Type your answer..." />
+  
+  <button onclick="checkSpelling()" class="bg-purple-500 text-white px-4 py-2 mt-4 rounded hover:bg-purple-600">
+    ✅ Check
+  </button>
+
+  <div class="mt-4">
+    <button onclick="newSpelling()" class="text-sm text-blue-500 hover:underline">🔁 New Word</button>
+  </div>
+
+  <div id="spelling-result" class="text-xl mt-6 font-bold hidden"></div>
+</div>
+
+<script>
+
+
+    function loadMatchingGame() {
+        fetch("/games/api/get-random-matching/")
+          .then(res => res.json())
+          .then(data => {
+            if (data.error) return alert(data.error);
+      
+            const shuffledTerms = [...data.items].sort(() => Math.random() - 0.5);
+            const shuffledMatches = [...data.items].sort(() => Math.random() - 0.5);
+      
+            document.getElementById('terms').innerHTML = shuffledTerms.map(i =>
+              `<div class="draggable bg-white shadow p-3 rounded" draggable="true" data-term="${i.term}">
+                ${i.image ? `<img src="${i.image}" class="h-10 inline mr-2">` : ""}${i.term}
+              </div>`
+            ).join('');
+      
+            document.getElementById('matches').innerHTML = shuffledMatches.map(i =>
+              `<div class="drop-target bg-yellow-100 p-3 rounded" data-match="${i.match}">${i.match}</div>`
+            ).join('');
+      
+            initMatchingDragDrop(data.items);
+          });
+      }
+
+      
+        const words = [
+        { word: "apple", img: "🍎" },
+        { word: "sun", img: "☀️" },
+        { word: "book", img: "📖" },
+        ];
+
+        let currentWord = null;
+
+        function newSpelling() {
+        const random = words[Math.floor(Math.random() * words.length)];
+        currentWord = random;
+        document.getElementById('spelling-image').innerHTML = `<div class="text-6xl">${random.img}</div>`;
+        document.getElementById('spelling-input').value = "";
+        document.getElementById('spelling-result').classList.add("hidden");
+        }
+
+        function checkSpelling() {
+        const input = document.getElementById('spelling-input').value.trim().toLowerCase();
+        const result = document.getElementById('spelling-result');
+
+        if (input === currentWord.word) {
+            result.innerHTML = "🎉 Correct!";
+            result.className = "text-green-600 text-xl mt-6 font-bold animate-bounce";
+        } else {
+            result.innerHTML = "❌ Try again!";
+            result.className = "text-red-600 text-xl mt-6 font-bold";
+        }
+        result.classList.remove("hidden");
+        }
+
+        newSpelling();
+</script>
+{% endblock %}

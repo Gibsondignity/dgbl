@@ -1,0 +1,41 @@
+{% extends 'games/base.html' %}
+{% block title %}{{ category }} Quiz{% endblock %}
+{% load quiz_tags %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 py-6">
+  <div class="text-center mb-6">
+    <h1 class="text-3xl font-bold text-blue-700">🎉 {{ category }} Quiz</h1>
+    <p class="text-gray-600 mt-2">Let's have some fun answering these questions!</p>
+  </div>
+
+  <form method="post" action="{% url 'submit_quiz' %}">
+    {% csrf_token %}
+    <input type="hidden" name="category" value="{{ category }}">
+
+    {% for quiz in quizzes %}
+    <div class="mb-6 p-4 bg-white shadow-lg rounded-xl">
+      <p class="font-semibold text-lg mb-2">{{ forloop.counter }}. {{ quiz.question_text }}</p>
+      {% if quiz.image %}
+        <img src="{{ quiz.image.url }}" alt="Question image" class="w-48 mx-auto mb-3 rounded shadow">
+      {% endif %}
+
+      <div class="grid grid-cols-2 gap-2">
+        {% for opt in 'ABCD' %}
+        <label class="cursor-pointer bg-gray-100 hover:bg-blue-100 p-3 rounded shadow">
+          <input type="radio" name="q{{ quiz.id }}" value="{{ opt }}" required>
+          {{ quiz|get_option:opt }}
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+
+    <div class="text-center">
+      <button type="submit" class="bg-green-500 text-white py-2 px-6 rounded-xl text-lg hover:bg-green-600">
+        ✅ Submit My Answers
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}
