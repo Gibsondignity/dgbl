@@ -10,7 +10,8 @@ def register(request):
         if form.is_valid():
             user = form.save()
             login(request, user)
-            return redirect_based_on_role(user)
+            return redirect('game_list')
+            # return redirect_based_on_role(user)
     else:
         form = CustomUserCreationForm()
     return render(request, 'users/register.html', {'form': form})
@@ -18,12 +19,16 @@ def register(request):
 
 
 def login_view(request):
+    if request.user.is_authenticated:
+        return redirect_based_on_role(request.user)
+
     if request.method == 'POST':
         form = CustomLoginForm(data=request.POST)
         if form.is_valid():
             user = form.get_user()
             login(request, user)
-            return redirect_based_on_role(user)
+            return redirect('game_list')
+            # return redirect_based_on_role(user)
     else:
         form = CustomLoginForm()
     return render(request, 'users/login.html', {'form': form})
@@ -31,8 +36,7 @@ def login_view(request):
 
 
 def logout_view(request):
-    if request.method == 'POST':
-        logout(request)
+    logout(request)
     return redirect('login')
 
 
