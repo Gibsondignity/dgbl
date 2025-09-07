@@ -2,11 +2,86 @@
 {% block title %}Quiz Results{% endblock %}
 
 {% block content %}
-<div class="max-w-xl mx-auto text-center py-12">
-  <h2 class="text-4xl font-bold text-green-600 mb-4">🎊 Well Done!</h2>
-  <p class="text-xl">You scored <strong>{{ score }}</strong> out of {{ total }} in the <strong>{{ category }}</strong> quiz!</p>
-  <a href="{% url 'quiz_list' %}" class="mt-6 inline-block bg-blue-500 text-white py-2 px-6 rounded-xl hover:bg-blue-600">
-    🔁 Play Another Quiz
-  </a>
+<div class="max-w-4xl mx-auto py-12 px-4">
+  <div class="text-center mb-8">
+    <h2 class="text-4xl font-bold text-green-600 mb-4">🎊 Well Done!</h2>
+    <p class="text-xl">You scored <strong>{{ score }}</strong> out of {{ total }} in the <strong>{{ category }}</strong> quiz!</p>
+    {% if level_name %}
+    <div class="mt-2 mb-4">
+      <span class="inline-block bg-purple-100 text-purple-800 text-sm px-3 py-1 rounded-full font-medium">
+        Level: {{ level_name }}
+      </span>
+    </div>
+    {% endif %}
+    <p class="text-lg text-gray-600">Percentage: {{ percentage|floatformat:1 }}%</p>
+  </div>
+
+  {% if percentage > 80 %}
+  <div id="congratulations" class="fixed inset-0 pointer-events-none z-50">
+    <!-- Floating balloons will be added here -->
+  </div>
+  {% endif %}
+
+  <div class="bg-white shadow-lg rounded-xl p-6 mb-8">
+    <h3 class="text-2xl font-bold mb-4">Review Your Answers</h3>
+    {% for result in results %}
+    <div class="border-b border-gray-200 pb-4 mb-4 last:border-b-0 last:pb-0 last:mb-0">
+      <p class="font-semibold mb-2">{{ result.question }}</p>
+      <p class="text-sm mb-1">
+        <span class="font-medium">Your answer:</span>
+        {% if result.selected %}
+          {{ result.selected }} - {{ result.correct_text }}
+        {% else %}
+          Not answered
+        {% endif %}
+      </p>
+      <p class="text-sm mb-1">
+        <span class="font-medium">Correct answer:</span>
+        {{ result.correct }} - {{ result.correct_text }}
+      </p>
+      {% if result.explanation %}
+      <p class="text-sm text-gray-700 mt-2">
+        <span class="font-medium">Explanation:</span> {{ result.explanation }}
+      </p>
+      {% endif %}
+      {% if result.is_correct %}
+        <span class="text-green-600 font-bold">✓ Correct</span>
+      {% else %}
+        <span class="text-red-600 font-bold">✗ Incorrect</span>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="text-center">
+    <a href="{% url 'quiz_list' %}" class="inline-block bg-blue-500 text-white py-2 px-6 rounded-xl hover:bg-blue-600">
+      🔁 Play Another Quiz
+    </a>
+  </div>
 </div>
+
+{% if percentage > 80 %}
+<script>
+  function createBalloon() {
+    const balloon = document.createElement('div');
+    balloon.className = 'absolute text-4xl animate-bounce';
+    balloon.innerHTML = '🎈';
+    balloon.style.left = Math.random() * 100 + '%';
+    balloon.style.animationDuration = (Math.random() * 3 + 2) + 's';
+    balloon.style.animationDelay = Math.random() * 2 + 's';
+    document.getElementById('congratulations').appendChild(balloon);
+
+    setTimeout(() => {
+      balloon.remove();
+    }, 5000);
+  }
+
+  // Create balloons periodically
+  setInterval(createBalloon, 1000);
+  // Create initial balloons
+  for (let i = 0; i < 10; i++) {
+    setTimeout(createBalloon, i * 200);
+  }
+</script>
+{% endif %}
 {% endblock %}
