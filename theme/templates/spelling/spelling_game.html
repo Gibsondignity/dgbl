@@ -4,6 +4,13 @@
 {% block content %}
 <div class="max-w-xl mx-auto px-4 py-6 text-center">
   <h2 class="text-2xl font-bold text-purple-700 mb-4">📝 Spelling Challenge</h2>
+  {% if level_name %}
+  <div class="mb-4">
+    <span class="inline-block bg-purple-100 text-purple-800 text-sm px-3 py-1 rounded-full font-medium">
+      Level: {{ level_name }}
+    </span>
+  </div>
+  {% endif %}
   <p class="text-gray-600">Can you spell the word correctly?</p>
 
   <div class="mt-6" id="spelling-image"></div>
@@ -48,20 +55,34 @@
       }
 
       
-        const words = [
-        { word: "apple", img: "🍎" },
-        { word: "sun", img: "☀️" },
-        { word: "book", img: "📖" },
-        ];
-
         let currentWord = null;
 
+        function loadSpellingGame() {
+          const url = "{% url 'get_random_spelling' %}" + (window.location.search || '');
+          fetch(url)
+            .then(res => res.json())
+            .then(data => {
+              if (data.error) {
+                alert(data.error);
+                return;
+              }
+              currentWord = data;
+              document.getElementById("spelling-input").value = "";
+              document.getElementById("spelling-result").classList.add("hidden");
+
+              document.getElementById("spelling-image").innerHTML = data.image
+                ? `<img src="${data.image}" class="h-32 mx-auto" />`
+                : "🔤";
+
+              if (data.audio) {
+                const audio = new Audio(data.audio);
+                audio.play();
+              }
+            });
+        }
+
         function newSpelling() {
-        const random = words[Math.floor(Math.random() * words.length)];
-        currentWord = random;
-        document.getElementById('spelling-image').innerHTML = `<div class="text-6xl">${random.img}</div>`;
-        document.getElementById('spelling-input').value = "";
-        document.getElementById('spelling-result').classList.add("hidden");
+          loadSpellingGame();
         }
 
         function checkSpelling() {
@@ -69,15 +90,45 @@
         const result = document.getElementById('spelling-result');
 
         if (input === currentWord.word) {
-            result.innerHTML = "🎉 Correct!";
+            let html = "🎉 Correct!";
+            if (currentWord.explanation) {
+                html += `<br><span class="text-gray-700 text-sm">${currentWord.explanation}</span>`;
+            }
+            result.innerHTML = html;
             result.className = "text-green-600 text-xl mt-6 font-bold animate-bounce";
+            // Trigger balloon celebration
+            createBalloons();
         } else {
-            result.innerHTML = "❌ Try again!";
+            let html = `❌ Try again! The correct spelling is: <strong>${currentWord.word}</strong>`;
+            if (currentWord.explanation) {
+                html += `<br><span class="text-gray-700 text-sm">${currentWord.explanation}</span>`;
+            }
+            result.innerHTML = html;
             result.className = "text-red-600 text-xl mt-6 font-bold";
         }
         result.classList.remove("hidden");
         }
 
-        newSpelling();
+        function createBalloons() {
+          const container = document.body;
+          for (let i = 0; i < 6; i++) {
+            setTimeout(() => {
+              const balloon = document.createElement('div');
+              balloon.className = 'fixed text-4xl animate-bounce pointer-events-none z-50';
+              balloon.innerHTML = '🎈';
+              balloon.style.left = Math.random() * 100 + '%';
+              balloon.style.top = '100%';
+              balloon.style.animationDuration = (Math.random() * 3 + 2) + 's';
+              balloon.style.animationDelay = Math.random() * 0.5 + 's';
+              container.appendChild(balloon);
+
+              setTimeout(() => {
+                balloon.remove();
+              }, 4000);
+            }, i * 150);
+          }
+        }
+
+        loadSpellingGame();
 </script>
 {% endblock %}
