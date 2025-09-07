@@ -12,7 +12,7 @@ from django.utils import timezone
 
 User = get_user_model()
 
-class GameCategory(models.Model):
+class GameLevel(models.Model):
     name = models.CharField(max_length=100)
 
     def __str__(self):
@@ -29,7 +29,7 @@ class Game(models.Model):
 
     title = models.CharField(max_length=200)
     description = models.TextField()
-    category = models.ForeignKey(GameCategory, on_delete=models.CASCADE)
+    level = models.ForeignKey(GameLevel, on_delete=models.CASCADE)
     game_type = models.CharField(max_length=20, choices=GAME_TYPES, default='quiz')
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     is_active = models.BooleanField(default=True)
@@ -57,6 +57,7 @@ class Quiz(models.Model):
     ]
     title = models.CharField(max_length=200, null=True)
     category = models.CharField(choices=QUIZ_CATEGORIES, max_length=100, null=True)
+    level = models.ForeignKey(GameLevel, on_delete=models.CASCADE, null=True, blank=True)
     question_text = models.TextField(null=True)
     image = models.ImageField(upload_to='quiz_images/', null=True, blank=True)  # 👈 Add this line
     option_a = models.CharField(max_length=200, null=True)
@@ -64,6 +65,7 @@ class Quiz(models.Model):
     option_c = models.CharField(max_length=200, null=True)
     option_d = models.CharField(max_length=200, null=True)
     correct_option = models.CharField(max_length=1, choices=[('A','A'), ('B','B'), ('C','C'), ('D','D')], null=True)
+    explanation = models.TextField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
 
     def __str__(self):
@@ -91,10 +93,13 @@ class Puzzle(models.Model):
         ('image', 'Image'),
     )
     type = models.CharField(max_length=10, choices=PUZZLE_TYPES)
+    category = models.CharField(max_length=100, blank=True, null=True)
     question = models.TextField()
     answer = models.CharField(max_length=200)
     image = models.ImageField(upload_to='puzzles/', blank=True, null=True)
     options = models.JSONField(blank=True, null=True)
+    explanation = models.TextField(blank=True, null=True)
+    level = models.ForeignKey(GameLevel, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return f"{self.question[:50]}..."
@@ -104,7 +109,9 @@ class MatchingItem(models.Model):
     category = models.CharField(max_length=50)  #
     term = models.CharField(max_length=100)     #
     match = models.CharField(max_length=100)    #
+    level = models.ForeignKey(GameLevel, on_delete=models.CASCADE, null=True, blank=True)
     image = models.ImageField(upload_to='matching/', blank=True, null=True)
+    explanation = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return f"{self.term} ↔ {self.match}"
@@ -112,9 +119,11 @@ class MatchingItem(models.Model):
 
 
 class SpellingItem(models.Model):
+    level = models.ForeignKey(GameLevel, on_delete=models.CASCADE, null=True, blank=True)
     word = models.CharField(max_length=100)
     image = models.ImageField(upload_to='spelling/', blank=True, null=True)
     audio = models.FileField(upload_to='spelling_audio/', blank=True, null=True)
+    explanation = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return self.word
