@@ -9,8 +9,8 @@ class User(AbstractUser):
         ('student', 'Student'),
         ('admin', 'Admin'),
     )
-    user_type = models.CharField(max_length=10, choices=USER_TYPES)
+    user_type = models.CharField(max_length=10, choices=USER_TYPES, default='student')
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
     
     def __str__(self):
-        return f"{self.username} ({self.get_user_type_display()})"
+        return f"{self.username}"
