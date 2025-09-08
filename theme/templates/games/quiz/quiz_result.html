@@ -1,5 +1,5 @@
 {% extends 'games/base.html' %}
-{% block title %}Quiz Results{% endblock %}
+{% comment %} {% block title %}Quiz Results{% endblock %}
 
 {% block content %}
 <div class="max-w-4xl mx-auto py-12 px-4">
@@ -85,4 +85,211 @@
   setInterval(createBalloon, 1500);
 </script>
 {% endif %}
+{% endblock %} {% endcomment %}
+
+
+
+
+{% load static %}
+{% block title %}Quiz Results{% endblock %}
+
+{% block content %}
+<style>
+  @keyframes floatUp {
+      0% { transform: translateY(100vh) translateX(0); opacity: 0; }
+      10% { opacity: 1; }
+      100% { transform: translateY(-100px) translateX(calc(var(--offset) * 100px)); opacity: 0; }
+  }
+  .floating-balloon {
+      position: fixed;
+      font-size: 2rem;
+      z-index: 1000;
+      pointer-events: none;
+      animation: floatUp 3s ease-out forwards;
+      left: calc(var(--start-x) * 1vw);
+      top: 100vh;
+  }
+
+  @keyframes confettiFall {
+      0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+  }
+  .confetti {
+      position: fixed;
+      width: 10px;
+      height: 10px;
+      opacity: 0;
+      z-index: 2000;
+      pointer-events: none;
+      animation: confettiFall linear forwards;
+  }
+
+  .celebration-title {
+      animation: pop 0.5s ease, glow 2s infinite alternate;
+  }
+
+  @keyframes pop {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+  }
+
+  @keyframes glow {
+      from { text-shadow: 0 0 5px #fff, 0 0 10px #fff; }
+      to { text-shadow: 0 0 10px #fff, 0 0 20px #ff0, 0 0 30px #ff8c00; }
+  }
+</style>
+
+<div class="max-w-4xl mx-auto py-12 px-4">
+  <div class="text-center mb-8">
+    {% if percentage >= 90 %}
+      <h2 class="text-5xl font-bold text-yellow-500 mb-4 celebration-title">🏆 SUPER STAR! 🎉</h2>
+      <p class="text-2xl text-yellow-700">You're absolutely amazing!</p>
+    {% elif percentage >= 70 %}
+      <h2 class="text-4xl font-bold text-green-600 mb-4 celebration-title">🎉 Fantastic! 🎊</h2>
+      <p class="text-xl">Outstanding performance!</p>
+    {% elif percentage >= 50 %}
+      <h2 class="text-4xl font-bold text-blue-600 mb-4">👍 Good Job!</h2>
+      <p class="text-xl">You're on the right track!</p>
+    {% else %}
+      <h2 class="text-4xl font-bold text-orange-600 mb-4">💪 Keep Trying!</h2>
+      <p class="text-xl">Practice makes perfect!</p>
+    {% endif %}
+
+    <p class="text-xl mt-4">You scored <strong class="text-purple-700 text-2xl">{{ score }}</strong> out of {{ total }} in the <strong>{{ category }}</strong> quiz!</p>
+    
+    {% if level_name %}
+    <div class="mt-2 mb-4">
+      <span class="inline-block bg-purple-100 text-purple-800 text-sm px-3 py-1 rounded-full font-medium">
+        Level: {{ level_name }}
+      </span>
+    </div>
+    {% endif %}
+    
+    <p class="text-lg text-gray-600">Percentage: <span class="font-bold text-xl">{{ percentage|floatformat:1 }}%</span></p>
+  </div>
+
+  <div class="bg-white shadow-lg rounded-xl p-6 mb-8">
+    <h3 class="text-2xl font-bold mb-4">Review Your Answers</h3>
+    {% for result in results %}
+    <div class="border-b border-gray-200 pb-4 mb-4 last:border-b-0 last:pb-0 last:mb-0">
+      <p class="font-semibold mb-2">{{ forloop.counter }}. {{ result.question }}</p>
+      <p class="text-sm mb-1">
+        <span class="font-medium">Your answer:</span>
+        {% if result.selected %}
+          <span class="{% if result.is_correct %}text-green-600{% else %}text-red-600{% endif %}">
+            {{ result.selected }} - {{ result.correct_text }}
+          </span>
+        {% else %}
+          <span class="text-gray-500">Not answered</span>
+        {% endif %}
+      </p>
+      <p class="text-sm mb-1">
+        <span class="font-medium">Correct answer:</span>
+        <span class="text-green-600">{{ result.correct }} - {{ result.correct_text }}</span>
+      </p>
+      {% if result.explanation %}
+      <p class="text-sm text-gray-700 mt-2">
+        <span class="font-medium">Explanation:</span> {{ result.explanation }}
+      </p>
+      {% endif %}
+      {% if result.is_correct %}
+        <span class="text-green-600 font-bold">✓ Correct</span>
+      {% else %}
+        <span class="text-red-600 font-bold">✗ Incorrect</span>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="text-center">
+    <a href="{% url 'quiz_list' %}" class="inline-block bg-blue-500 text-white py-3 px-8 rounded-xl text-lg hover:bg-blue-600 transition transform hover:scale-105">
+      🔁 Play Another Quiz
+    </a>
+  </div>
+</div>
+
+<!-- Celebration Scripts -->
+<script>
+    // 🎵 Play congratulations sound for high scores
+    function playCelebrationSound() {
+        const sound = new Audio("{% static 'sounds/congratulations.mp3' %}");
+        sound.volume = 0.5;
+        sound.play().catch(err => {
+            console.warn("Sound playback failed:", err.message);
+        });
+    }
+
+    // 🎈 Floating balloons
+    function createBalloons(count = 10) {
+        const container = document.body;
+        if (!container) return;
+
+        for (let i = 0; i < count; i++) {
+            setTimeout(() => {
+                const balloon = document.createElement('div');
+                balloon.className = 'floating-balloon';
+                
+                const emojis = ['🎈', '🎉', '🎊', '⭐', '🏆', '✅', '✨', '🥇', '🎖️', '🏅'];
+                balloon.innerHTML = emojis[Math.floor(Math.random() * emojis.length)];
+
+                const startX = Math.random() * 100;
+                balloon.style.setProperty('--start-x', startX);
+
+                const offset = (Math.random() - 0.5) * 4;
+                balloon.style.setProperty('--offset', offset);
+
+                const duration = 2 + Math.random() * 3;
+                balloon.style.animationDuration = `${duration}s`;
+
+                container.appendChild(balloon);
+
+                setTimeout(() => {
+                    if (balloon && balloon.parentNode) {
+                        balloon.remove();
+                    }
+                }, duration * 1000 + 100);
+            }, i * 150);
+        }
+    }
+
+    // 🎊 Confetti for top scores
+    function createConfetti() {
+        const container = document.body;
+        if (!container) return;
+
+        const colors = ['#ff0', '#f0f', '#0ff', '#0f0', '#f00', '#00f'];
+        for (let i = 0; i < 100; i++) {
+            setTimeout(() => {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                confetti.style.animationDelay = Math.random() * 0.5 + 's';
+                container.appendChild(confetti);
+
+                setTimeout(() => {
+                    if (confetti && confetti.parentNode) {
+                        confetti.remove();
+                    }
+                }, 5000);
+            }, i * 30);
+        }
+    }
+
+    // 🚀 Initialize celebration
+    document.addEventListener("DOMContentLoaded", () => {
+        const percentage = {{ percentage|floatformat:0 }};
+        
+        if (percentage >= 70) {
+            playCelebrationSound();
+            createBalloons(15);
+            
+            if (percentage >= 90) {
+                createConfetti();
+            }
+        }
+    });
+</script>
 {% endblock %}
