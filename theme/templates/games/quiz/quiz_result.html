@@ -4,8 +4,13 @@
 {% block content %}
 <div class="max-w-4xl mx-auto py-12 px-4">
   <div class="text-center mb-8">
+    {% if percentage > 70 %}
+    <h2 class="text-4xl font-bold text-green-600 mb-4">🎉 Fantastic! 🎊</h2>
+    <p class="text-xl">Outstanding performance! You scored <strong>{{ score }}</strong> out of {{ total }} in the <strong>{{ category }}</strong> quiz!</p>
+    {% else %}
     <h2 class="text-4xl font-bold text-green-600 mb-4">🎊 Well Done!</h2>
     <p class="text-xl">You scored <strong>{{ score }}</strong> out of {{ total }} in the <strong>{{ category }}</strong> quiz!</p>
+    {% endif %}
     {% if level_name %}
     <div class="mt-2 mb-4">
       <span class="inline-block bg-purple-100 text-purple-800 text-sm px-3 py-1 rounded-full font-medium">
@@ -16,11 +21,6 @@
     <p class="text-lg text-gray-600">Percentage: {{ percentage|floatformat:1 }}%</p>
   </div>
 
-  {% if percentage > 80 %}
-  <div id="congratulations" class="fixed inset-0 pointer-events-none z-50">
-    <!-- Floating balloons will be added here -->
-  </div>
-  {% endif %}
 
   <div class="bg-white shadow-lg rounded-xl p-6 mb-8">
     <h3 class="text-2xl font-bold mb-4">Review Your Answers</h3>
@@ -60,28 +60,29 @@
   </div>
 </div>
 
-{% if percentage > 80 %}
+{% if percentage > 70 %}
 <script>
   function createBalloon() {
     const balloon = document.createElement('div');
-    balloon.className = 'absolute text-4xl animate-bounce';
+    balloon.className = 'fixed text-4xl animate-bounce pointer-events-none z-50';
     balloon.innerHTML = '🎈';
     balloon.style.left = Math.random() * 100 + '%';
+    balloon.style.top = '100%';
     balloon.style.animationDuration = (Math.random() * 3 + 2) + 's';
-    balloon.style.animationDelay = Math.random() * 2 + 's';
-    document.getElementById('congratulations').appendChild(balloon);
+    balloon.style.animationDelay = Math.random() * 0.5 + 's';
+    document.body.appendChild(balloon);
 
     setTimeout(() => {
       balloon.remove();
-    }, 5000);
+    }, 4000);
   }
 
-  // Create balloons periodically
-  setInterval(createBalloon, 1000);
   // Create initial balloons
   for (let i = 0; i < 10; i++) {
     setTimeout(createBalloon, i * 200);
   }
+  // Create more balloons periodically
+  setInterval(createBalloon, 1500);
 </script>
 {% endif %}
 {% endblock %}
