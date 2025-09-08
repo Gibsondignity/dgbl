@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import GameLevel, Game, GameSession, Quiz, Puzzle
+from .models import GameLevel, Game, GameSession, Quiz, Puzzle, SpellingItem, MatchingItem
 
 # Register your models here.
 admin.site.site_header = "DIGITAL GAME PLATFORM - ADMIN PANNEL"
@@ -13,3 +13,5 @@ admin.site.register(Game)
 admin.site.register(GameSession)
 admin.site.register(Quiz)
 admin.site.register(Puzzle)
+admin.site.register(SpellingItem)
+admin.site.register(MatchingItem)
