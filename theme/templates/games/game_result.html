@@ -1,0 +1,85 @@
+{% extends 'games/base.html' %}
+{% block title %}Game Results{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto py-12 px-4">
+  <div class="text-center mb-8">
+    {% if score > 0 %}
+    <h2 class="text-4xl font-bold text-green-600 mb-4">🎉 Great Job! 🎊</h2>
+    <p class="text-xl">You scored <strong>{{ score }}</strong> points in the <strong>{{ game_type }}</strong> game!</p>
+    {% else %}
+    <h2 class="text-4xl font-bold text-blue-600 mb-4">🎊 Keep Trying!</h2>
+    <p class="text-xl">You scored <strong>{{ score }}</strong> points in the <strong>{{ game_type }}</strong> game. Try again to improve!</p>
+    {% endif %}
+    {% if level_name %}
+    <div class="mt-2 mb-4">
+      <span class="inline-block bg-purple-100 text-purple-800 text-sm px-3 py-1 rounded-full font-medium">
+        Level: {{ level_name }}
+      </span>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="text-center">
+    <a href="{% url 'game_list' %}" class="inline-block bg-blue-500 text-white py-2 px-6 rounded-xl hover:bg-blue-600">
+      🔁 Play Another Game
+    </a>
+  </div>
+</div>
+
+{% if score > 0 %}
+<style>
+  .balloon {
+    position: fixed;
+    width: 40px;
+    height: 60px;
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    background: radial-gradient(circle at 30% 30%, #fff, transparent 60%), 
+                conic-gradient(from 0deg, #ff6b6b, #ffa500, #ffff00, #adff2f, #00bfff, #8a2be2);
+    animation: float 8s ease-in infinite;
+    z-index: 1000;
+    opacity: 0.9;
+  }
+
+  @keyframes float {
+    0% {
+      transform: translateY(100vh) translateX(0);
+      opacity: 0;
+    }
+    10% {
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(-100px) translateX(calc(100vw * var(--direction)));
+      opacity: 0;
+    }
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const container = document.body;
+
+    for (let i = 0; i < 20; i++) {
+      const balloon = document.createElement('div');
+      balloon.classList.add('balloon');
+
+      // Random horizontal position
+      const leftPos = Math.random() * 100;
+      balloon.style.left = `${leftPos}vw`;
+
+      // Random animation duration and direction
+      const duration = 5 + Math.random() * 8;
+      const direction = Math.random() > 0.5 ? 1 : -1;
+      balloon.style.animationDuration = `${duration}s`;
+      balloon.style.setProperty('--direction', direction);
+
+      // Random delay to stagger appearance
+      balloon.style.animationDelay = `${Math.random() * 3}s`;
+
+      container.appendChild(balloon);
+    }
+  });
+</script>
+{% endif %}
+{% endblock %}
