@@ -1,18 +1,45 @@
 {% extends 'games/base.html' %}
+
+{% comment %} {% extends 'games/base.html' %}
 {% load static %}
 {% block title %}Play Puzzle{% endblock %}
 
 {% block content %}
 
 <style>
-    @keyframes pop {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.3); }
-      100% { transform: scale(1); }
-    }
-    .pop-animation {
-      animation: pop 0.5s ease;
-    }
+  @keyframes pop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.3); }
+    100% { transform: scale(1); }
+  }
+  .pop-animation {
+    animation: pop 0.5s ease;
+  }
+
+  /* ✅ Floating Balloon Animation */
+  @keyframes floatUp {
+      0% {
+          transform: translateY(100vh) translateX(0);
+          opacity: 0;
+      }
+      10% {
+          opacity: 1;
+      }
+      100% {
+          transform: translateY(-100px) translateX(calc(var(--offset) * 100px));
+          opacity: 0;
+      }
+  }
+
+  .floating-balloon {
+      position: fixed;
+      font-size: 2rem;
+      z-index: 1000;
+      pointer-events: none;
+      animation: floatUp 3s ease-out forwards;
+      left: calc(var(--start-x) * 1vw);
+      top: 100vh;
+  }
 </style>
 
 <div class="max-w-3xl mx-auto text-center py-10 px-4">
@@ -117,6 +144,36 @@
       .then(data => {
         if (data.success) {
           console.log('Score submitted successfully');
+          if (data.redirect) {
+            window.location.href = data.redirect;
+          }
+        } else {
+          console.error('Failed to submit score');
+        }
+      })
+      .catch(err => console.error('Error submitting score:', err));
+    } 
+
+
+    function submitGameScore(gameType, score) {
+      const levelId = new URLSearchParams(window.location.search).get('level');
+      const formData = new FormData();
+      formData.append('game_type', gameType);
+      formData.append('score', score);
+      formData.append('level_id', levelId || '');
+    
+      fetch("{% url 'submit_game' %}", {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          console.log('Score submitted successfully');
+          // 🚫 No redirect — balloons only!
         } else {
           console.error('Failed to submit score');
         }
@@ -124,74 +181,334 @@
       .catch(err => console.error('Error submitting score:', err));
     }
 
-    function createBalloons() {
+     function createBalloons() {
       const container = document.body;
+  
+      for (let i = 0; i < 8; i++) {
+          setTimeout(() => {
+              const balloon = document.createElement('div');
+              balloon.className = 'floating-balloon';
+              balloon.innerHTML = '🎈';
+  
+              // Random horizontal start position
+              const startX = Math.random() * 100;
+              balloon.style.setProperty('--start-x', startX);
+  
+              // Random horizontal drift
+              const offset = (Math.random() - 0.5) * 4; // -2 to +2
+              balloon.style.setProperty('--offset', offset);
+  
+              // Random duration
+              const duration = 2 + Math.random() * 3; // 2s to 5s
+              balloon.style.animationDuration = `${duration}s`;
+  
+              // Optional: random emoji variation
+              const emojis = ['🎈', '🎉', '🎊', '⭐', '🏆', '✅'];
+              balloon.innerHTML = emojis[Math.floor(Math.random() * emojis.length)];
+  
+              container.appendChild(balloon);
+  
+              // Clean up after animation ends
+              setTimeout(() => {
+                  if (balloon.parentNode) {
+                      balloon.remove();
+                  }
+              }, duration * 1000 + 100);
+          }, i * 150); // Stagger appearance
+      }
+    } 
+
+
+
+
+    function createBalloons() {
+      // Ensure body exists
+      const container = document.body;
+      if (!container) return;
+    
       for (let i = 0; i < 8; i++) {
         setTimeout(() => {
           const balloon = document.createElement('div');
-          balloon.className = 'fixed text-4xl animate-bounce pointer-events-none z-50';
+          balloon.className = 'floating-balloon';
           balloon.innerHTML = '🎈';
-          balloon.style.left = Math.random() * 100 + '%';
-          balloon.style.top = '100%';
-          balloon.style.animationDuration = (Math.random() * 3 + 2) + 's';
-          balloon.style.animationDelay = Math.random() * 0.5 + 's';
+    
+          const startX = Math.random() * 100;
+          balloon.style.setProperty('--start-x', startX);
+    
+          const offset = (Math.random() - 0.5) * 4;
+          balloon.style.setProperty('--offset', offset);
+    
+          const duration = 2 + Math.random() * 3;
+          balloon.style.animationDuration = `${duration}s`;
+    
+          const emojis = ['🎈', '🎉', '🎊', '⭐', '🏆', '✅'];
+          balloon.innerHTML = emojis[Math.floor(Math.random() * emojis.length)];
+    
           container.appendChild(balloon);
-
+    
           setTimeout(() => {
-            balloon.remove();
-          }, 4000);
-        }, i * 200);
+            if (balloon.parentNode) {
+              balloon.remove();
+            }
+          }, duration * 1000 + 100);
+        }, i * 150);
       }
     }
   
     document.addEventListener("DOMContentLoaded", loadPuzzle);
   </script>
+
   
+{% endblock %} {% endcomment %}
+
+
+
+
+
+{% load static %}
+{% block title %}Play Puzzle{% endblock %}
+
+{% block content %}
+
+<style>
+  @keyframes pop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.3); }
+    100% { transform: scale(1); }
+  }
+  .pop-animation {
+    animation: pop 0.5s ease;
+  }
+
+  /* Floating Balloon Animation */
+  @keyframes floatUp {
+      0% {
+          transform: translateY(100vh) translateX(0);
+          opacity: 0;
+      }
+      10% {
+          opacity: 1;
+      }
+      100% {
+          transform: translateY(-100px) translateX(calc(var(--offset) * 100px));
+          opacity: 0;
+      }
+  }
+
+  .floating-balloon {
+      position: fixed;
+      font-size: 2rem;
+      z-index: 1000;
+      pointer-events: none;
+      animation: floatUp 3s ease-out forwards;
+      left: calc(var(--start-x) * 1vw);
+      top: 100vh;
+  }
+</style>
+
+<div class="max-w-3xl mx-auto text-center py-10 px-4">
+  <form id="csrf-form">{% csrf_token %}</form>
+  <h1 class="text-3xl font-bold text-purple-700 mb-6">🧩 Let's Solve a Puzzle!</h1>
+  {% if level_name %}
+  <div class="mb-4">
+    <span class="inline-block bg-purple-100 text-purple-800 text-sm px-3 py-1 rounded-full font-medium">
+      Level: {{ level_name }}
+    </span>
+  </div>
+  {% endif %}
+
+  <div id="puzzle-container" class="bg-white shadow-lg rounded-xl p-6 min-h-[200px]">
+    <!-- Puzzle will load here -->
+  </div>
+
+  <div id="feedback" class="mt-4 text-lg font-semibold"></div>
+
+  <button onclick="loadPuzzle()" class="mt-8 bg-purple-500 text-white py-2 px-6 rounded-xl hover:bg-purple-600 transition">
+    🔁 Next Puzzle
+  </button>
+</div>
 
 <script>
-    const puzzles = [/* ... same as before ... */];
+    // 🎵 Audio Setup with fallbacks
     const correctSound = new Audio("{% static 'sounds/correct.mp3' %}");
-  
-    function loadPuzzle() {
-      const container = document.getElementById("puzzle-container");
-      const feedback = document.getElementById("feedback");
-      feedback.innerHTML = "";
-      container.innerHTML = "";
-  
-      const puzzle = puzzles[Math.floor(Math.random() * puzzles.length)];
-  
-      if (puzzle.type === 'text') {
-        container.innerHTML = `
-          <p class="text-xl mb-4">${puzzle.question}</p>
-          <input id="answer" type="text" class="border p-2 rounded w-full max-w-sm mx-auto" placeholder="Type your answer here">
-          <button onclick="checkAnswer('${puzzle.answer}')" class="mt-4 bg-green-500 text-white py-2 px-4 rounded">Submit</button>
-        `;
-      } else if (puzzle.type === 'image') {
-        const optionsHTML = puzzle.options.map(opt => `
-          <button onclick="checkAnswer('${puzzle.answer}', '${opt}')" class="bg-blue-100 hover:bg-blue-200 p-3 rounded m-2">${opt}</button>
-        `).join('');
-        container.innerHTML = `
-          <p class="text-xl mb-4">${puzzle.question}</p>
-          <img src="${puzzle.image}" alt="Puzzle Image" class="w-48 mx-auto mb-4 rounded shadow">
-          <div>${optionsHTML}</div>
-        `;
-      }
+    const wrongSound = new Audio("{% static 'sounds/wronganswer.mp3' %}");
+
+    // Fallback to WAV if MP3 fails
+    correctSound.addEventListener('error', () => {
+        console.warn("MP3 not supported, falling back to WAV for correct sound");
+        correctSound.src = "{% static 'sounds/correct.mp3' %}";
+        correctSound.load();
+    });
+
+    wrongSound.addEventListener('error', () => {
+        console.warn("MP3 not supported, falling back to WAV for wrong sound");
+        wrongSound.src = "{% static 'sounds/wronganswer.mp3' %}";
+        wrongSound.load();
+    });
+
+    // 🎵 Safe sound player (clones + catches errors)
+    function playSound(sound) {
+        if (!sound) return;
+        const clone = sound.cloneNode();
+        clone.volume = 0.4; // So it’s not too loud
+        clone.play().catch(err => {
+            console.warn("🔇 Sound playback prevented:", err.message);
+            // Silent fail — game continues
+        });
     }
+
+    // 🎈 Create floating balloons
+    function createBalloons() {
+        const container = document.body;
+        if (!container) {
+            console.error("Body not ready for balloons!");
+            return;
+        }
+
+        for (let i = 0; i < 8; i++) {
+            setTimeout(() => {
+                const balloon = document.createElement('div');
+                balloon.className = 'floating-balloon';
+                
+                // Random emoji
+                const emojis = ['🎈', '🎉', '🎊', '⭐', '🏆', '✅', '🥇', '✨'];
+                balloon.innerHTML = emojis[Math.floor(Math.random() * emojis.length)];
+
+                // Random start position
+                const startX = Math.random() * 100;
+                balloon.style.setProperty('--start-x', startX);
+
+                // Random drift
+                const offset = (Math.random() - 0.5) * 4;
+                balloon.style.setProperty('--offset', offset);
+
+                // Random duration
+                const duration = 2 + Math.random() * 3; // 2s to 5s
+                balloon.style.animationDuration = `${duration}s`;
+
+                container.appendChild(balloon);
+
+                // Cleanup after animation
+                setTimeout(() => {
+                    if (balloon && balloon.parentNode) {
+                        balloon.remove();
+                    }
+                }, duration * 1000 + 100);
+            }, i * 150); // Staggered appearance
+        }
+    }
+
+    // 🔄 Load a new puzzle
+    function loadPuzzle() {
+        const url = "{% url 'get_random_puzzle' %}" + (window.location.search || '');
+        fetch(url)
+            .then(res => res.json())
+            .then(puzzle => {
+                const container = document.getElementById("puzzle-container");
+                const feedback = document.getElementById("feedback");
+                feedback.innerHTML = "";
+                container.innerHTML = "";
+
+                if (puzzle.error) {
+                    container.innerHTML = `<p class="text-red-500">${puzzle.error}</p>`;
+                    return;
+                }
+
+                if (puzzle.type === 'text') {
+                    container.innerHTML = `
+                        <p class="text-xl mb-4">${puzzle.question}</p>
+                        <input id="answer" type="text" class="border p-2 rounded w-full max-w-sm mx-auto focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Type your answer here">
+                        <button onclick="checkAnswer('${puzzle.answer}', null, '${puzzle.explanation}')" class="mt-4 bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded transition">Submit</button>
+                    `;
+                    // Focus input for better UX
+                    setTimeout(() => {
+                        const input = document.getElementById("answer");
+                        if (input) input.focus();
+                    }, 100);
+                } else if (puzzle.type === 'image') {
+                    const optionsHTML = puzzle.options.map(opt => `
+                        <button onclick="checkAnswer('${puzzle.answer}', '${opt}', '${puzzle.explanation}')" class="bg-blue-100 hover:bg-blue-200 p-3 rounded m-2 transition transform hover:scale-105">${opt}</button>
+                    `).join('');
+                    container.innerHTML = `
+                        <p class="text-xl mb-4">${puzzle.question}</p>
+                        <img src="${puzzle.image}" alt="Puzzle Image" class="w-48 mx-auto mb-4 rounded shadow-md">
+                        <div class="flex flex-wrap justify-center">${optionsHTML}</div>
+                    `;
+                }
+            })
+            .catch(err => {
+                console.error("Failed to load puzzle:", err);
+                document.getElementById("puzzle-container").innerHTML = `<p class="text-red-500">Failed to load puzzle. Please try again.</p>`;
+            });
+    }
+
+    // ✅ Check user answer
+    function checkAnswer(correctAnswer, selectedAnswer = null, explanation = null) {
+      // Get user answer — from input or button
+      let userAnswer = selectedAnswer 
+          ? selectedAnswer.trim().toLowerCase() 
+          : document.getElementById("answer")?.value.trim().toLowerCase();
   
-    function checkAnswer(correctAnswer, selectedAnswer = null) {
-      const answer = selectedAnswer || document.getElementById("answer").value.trim().toLowerCase();
-      const isCorrect = answer.toLowerCase() === correctAnswer.toLowerCase();
+      const isCorrect = userAnswer === correctAnswer.trim().toLowerCase();
   
       const feedback = document.getElementById("feedback");
       if (isCorrect) {
-        correctSound.play();
-        feedback.innerHTML = `<div class="text-green-600 text-xl font-bold pop-animation">🎉 Correct! Great job!</div>`;
+          playSound(correctSound);
+          let html = `<div class="text-green-600 text-xl font-bold pop-animation">🎉 Correct! Great job!</div>`;
+          if (explanation) {
+              html += `<div class="mt-2 text-gray-700">${explanation}</div>`;
+          }
+          feedback.innerHTML = html;
+          createBalloons();
+          submitGameScore('puzzle', 1);
       } else {
-        feedback.innerHTML = `<div class="text-red-600">❌ Oops! Try again or load a new puzzle.</div>`;
+          playSound(wrongSound);
+          let html = `<div class="text-red-600">❌ Oops! The correct answer is: <strong>${correctAnswer}</strong></div>`;
+          if (explanation) {
+              html += `<div class="mt-2 text-gray-700">${explanation}</div>`;
+          }
+          feedback.innerHTML = html;
       }
+  }
+
+    // 📊 Submit score without redirect
+    function submitGameScore(gameType, score) {
+        const levelId = new URLSearchParams(window.location.search).get('level');
+        const formData = new FormData();
+        formData.append('game_type', gameType);
+        formData.append('score', score);
+        formData.append('level_id', levelId || '');
+
+        fetch("{% url 'submit_game' %}", {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                console.log('✅ Score submitted successfully');
+                // 🚫 NO REDIRECT — balloons and feedback only!
+            } else {
+                console.error('❌ Failed to submit score');
+            }
+        })
+        .catch(err => {
+            console.error('⚠️ Error submitting score:', err);
+        });
     }
-  
-    document.addEventListener("DOMContentLoaded", loadPuzzle);
-  </script>
-  
+
+    // 🚀 Initialize on page load
+    document.addEventListener("DOMContentLoaded", () => {
+        // Preload sounds
+        correctSound.load();
+        wrongSound.load();
+        // Load first puzzle
+        loadPuzzle();
+    });
+
+</script>
+
 {% endblock %}
