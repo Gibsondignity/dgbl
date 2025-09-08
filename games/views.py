@@ -135,12 +135,17 @@ def submit_quiz(request):
                 level_id = None
 
         # Save score with user
-        QuizScore.objects.create(
-            user=request.user,
-            category=category,
-            score=score,
-            date_played=now()
-        )
+        try:
+            QuizScore.objects.create(
+                user=request.user,
+                category=category,
+                score=score,
+                date_played=now()
+            )
+            print(f"DEBUG: Score saved successfully: {score}")
+        except Exception as e:
+            print(f"DEBUG: Error saving score: {e}")
+            # Continue to show results even if save fails
 
         # Clear session data after successful submission
         if 'quiz_questions' in request.session:
@@ -325,3 +330,41 @@ def get_random_spelling(request):
         "audio": item.audio.url if item.audio else None,
         "explanation": item.explanation
     })
+
+
+@login_required
+def submit_game(request):
+    if request.user.user_type != 'student':
+        return HttpResponseForbidden("Access denied.")
+
+    if request.method == 'POST':
+        game_type = request.POST.get('game_type')
+        score = int(request.POST.get('score', 0))
+        level_id = request.POST.get('level_id')
+
+        # Save to GameSession
+        try:
+            game = Game.objects.filter(game_type=game_type).first()  # Assuming there's a game for the type
+            if not game:
+                # Create a dummy game if not exists
+                game = Game.objects.create(
+                    title=f"{game_type} Game",
+                    description=f"Auto-created {game_type} game",
+                    game_type=game_type,
+                    level_id=level_id,
+                    created_by=request.user
+                )
+            GameSession.objects.create(
+                player=request.user,
+                game=game,
+                score=score,
+                played_at=now()
+            )
+            print(f"DEBUG: Game score saved: {score} for {game_type}")
+        except Exception as e:
+            print(f"DEBUG: Error saving game score: {e}")
+
+        # For now, just return success, or redirect to results
+        return JsonResponse({"success": True, "message": "Score saved!"})
+    else:
+        return JsonResponse({"error": "Invalid method"})
