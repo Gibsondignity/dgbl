@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 from django.utils.timezone import now
@@ -6,6 +6,7 @@ from .models import Game, QuizScore, Quiz, Puzzle, MatchingItem, SpellingItem, G
 from django.http import JsonResponse
 import random
 from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
 
 
 @login_required
@@ -78,7 +79,7 @@ def quiz_level_select(request, category):
     })
 
 
-
+@csrf_exempt
 @login_required
 def submit_quiz(request):
     print(f"DEBUG: submit_quiz called with method: {request.method}")
@@ -97,9 +98,7 @@ def submit_quiz(request):
         if not question_ids:
             print("DEBUG: No questions in session, redirecting to quiz list")
             # If no questions in session, redirect back to quiz list
-            return render(request, 'games/quiz/stem_quiz_list.html', {
-                'error': 'Quiz session expired. Please start a new quiz.'
-            })
+            return redirect('quiz_list')
 
         score = 0
         results = []
@@ -169,7 +168,7 @@ def submit_quiz(request):
     else:
         print("DEBUG: Not a POST request, redirecting to quiz list")
         # If not POST, redirect to quiz list
-        return render(request, 'games/quiz/stem_quiz_list.html', {})
+        return redirect('quiz_list')
 
 
 
@@ -364,7 +363,38 @@ def submit_game(request):
         except Exception as e:
             print(f"DEBUG: Error saving game score: {e}")
 
-        # For now, just return success, or redirect to results
-        return JsonResponse({"success": True, "message": "Score saved!"})
+        # Store data in session for results page
+        request.session['last_game_type'] = game_type
+        request.session['last_game_score'] = score
+        request.session['last_game_level_id'] = level_id
+
+        # Return redirect URL
+        # return JsonResponse({"success": True, "redirect": "/game/result/"})
+        return JsonResponse({"success": True})
     else:
         return JsonResponse({"error": "Invalid method"})
+
+
+@login_required
+def game_result(request):
+    if request.user.user_type != 'student':
+        return HttpResponseForbidden("Access denied.")
+
+    # Get data from session or GET params
+    game_type = request.session.get('last_game_type', 'Game')
+    score = request.session.get('last_game_score', 0)
+    level_id = request.session.get('last_game_level_id')
+
+    level_name = None
+    if level_id:
+        try:
+            level = GameLevel.objects.get(id=level_id)
+            level_name = level.name
+        except GameLevel.DoesNotExist:
+            pass
+
+    return render(request, 'games/game_result.html', {
+        'game_type': game_type,
+        'score': score,
+        'level_name': level_name
+    })
