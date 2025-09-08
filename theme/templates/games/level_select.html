@@ -8,7 +8,7 @@
 
   <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
     {% for level in levels %}
-    <a href="{% url 'games:list' %}?category={{ category }}&level={{ level.id }}"
+    <a href="{% url 'list' %}?category={{ category }}&level={{ level.id }}"
        class="bg-gradient-to-r from-blue-100 to-purple-100 hover:from-blue-200 hover:to-purple-200 p-6 rounded-xl text-center shadow-md hover:shadow-lg transition duration-300 transform hover:scale-105">
       <div class="text-4xl mb-4">
         {% if level.name|lower == 'beginner' %}🌱{% elif level.name|lower == 'intermediate' %}🌟{% elif level.name|lower == 'advanced' %}🚀{% else %}🎮{% endif %}
@@ -24,7 +24,7 @@
   </div>
 
   <div class="text-center mt-8">
-    <a href="{% url 'games:list' %}" class="text-blue-500 hover:underline">← Back to Categories</a>
+    <a href="{% url 'quiz_list' %}" class="text-blue-500 hover:underline">← Back to Categories</a>
   </div>
 </div>
 {% endblock %}
