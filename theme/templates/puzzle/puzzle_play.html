@@ -16,6 +16,7 @@
 </style>
 
 <div class="max-w-3xl mx-auto text-center py-10 px-4">
+  <form id="csrf-form">{% csrf_token %}</form>
   <h1 class="text-3xl font-bold text-purple-700 mb-6">🧩 Let's Solve a Puzzle!</h1>
   {% if level_name %}
   <div class="mb-4">
@@ -87,6 +88,8 @@
         feedback.innerHTML = html;
         // Trigger balloon celebration
         createBalloons();
+        // Submit score
+        submitGameScore('puzzle', 1);
       } else {
         let html = `<div class="text-red-600">❌ Oops! The correct answer is: <strong>${correctAnswer}</strong></div>`;
         if (explanation) {
@@ -94,6 +97,31 @@
         }
         feedback.innerHTML = html;
       }
+    }
+
+    function submitGameScore(gameType, score) {
+      const levelId = new URLSearchParams(window.location.search).get('level');
+      const formData = new FormData();
+      formData.append('game_type', gameType);
+      formData.append('score', score);
+      formData.append('level_id', levelId || '');
+
+      fetch("{% url 'submit_game' %}", {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          console.log('Score submitted successfully');
+        } else {
+          console.error('Failed to submit score');
+        }
+      })
+      .catch(err => console.error('Error submitting score:', err));
     }
 
     function createBalloons() {
