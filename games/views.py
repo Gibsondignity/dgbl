@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 from django.utils.timezone import now
-from .models import Game, QuizScore, Quiz, Puzzle, MatchingItem, SpellingItem, GameLevel
+from .models import Game, QuizScore, Quiz, Puzzle, MatchingItem, SpellingItem, GameLevel, GameSession
 from django.http import JsonResponse
 import random
 from django.utils import timezone
