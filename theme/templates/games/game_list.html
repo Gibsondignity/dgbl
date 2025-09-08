@@ -30,7 +30,7 @@
   {% elif games %}
   <!-- Game List by Category and Level -->
   <div class="text-left my-6">
-    <a href="{% url 'games:list' %}?category={{ category }}" class="text-blue-500 hover:underline">← Back to Levels</a>
+    <a href="{% url 'list' %}?category={{ category }}" class="text-blue-500 hover:underline">← Back to Levels</a>
   </div>
   <div class="text-center mb-6">
     <h3 class="text-2xl font-bold text-purple-700">{{ category|title }} Games - {{ level_name }}</h3>
