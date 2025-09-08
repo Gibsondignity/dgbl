@@ -1,4 +1,5 @@
 {% extends 'games/base.html' %}
+{% comment %} {% extends 'games/base.html' %}
 {% block title %}Spelling Game{% endblock %}
 
 {% block content %}
@@ -130,6 +131,9 @@
           .then(data => {
             if (data.success) {
               console.log('Score submitted successfully');
+              if (data.redirect) {
+                window.location.href = data.redirect;
+              }
             } else {
               console.error('Failed to submit score');
             }
@@ -158,5 +162,249 @@
         }
 
         loadSpellingGame();
+</script>
+{% endblock %} {% endcomment %}
+
+
+
+
+
+{% load static %}
+{% block title %}Spelling Game{% endblock %}
+
+{% block content %}
+<style>
+  @keyframes floatUp {
+      0% {
+          transform: translateY(100vh) translateX(0);
+          opacity: 0;
+      }
+      10% {
+          opacity: 1;
+      }
+      100% {
+          transform: translateY(-100px) translateX(calc(var(--offset) * 100px));
+          opacity: 0;
+      }
+  }
+
+  .floating-balloon {
+      position: fixed;
+      font-size: 2rem;
+      z-index: 1000;
+      pointer-events: none;
+      animation: floatUp 3s ease-out forwards;
+      left: calc(var(--start-x) * 1vw);
+      top: 100vh;
+  }
+
+  @keyframes pop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.3); }
+    100% { transform: scale(1); }
+  }
+  .pop-animation {
+    animation: pop 0.5s ease;
+  }
+</style>
+
+<div class="max-w-xl mx-auto px-4 py-6 text-center">
+  <form id="csrf-form">{% csrf_token %}</form>
+  <h2 class="text-2xl font-bold text-purple-700 mb-4">📝 Spelling Challenge</h2>
+  {% if level_name %}
+  <div class="mb-4">
+    <span class="inline-block bg-purple-100 text-purple-800 text-sm px-3 py-1 rounded-full font-medium">
+      Level: {{ level_name }}
+    </span>
+  </div>
+  {% endif %}
+  <p class="text-gray-600">Can you spell the word correctly?</p>
+
+  <div class="mt-6" id="spelling-image"></div>
+
+  <input type="text" id="spelling-input" class="mt-4 px-4 py-2 border border-gray-300 rounded w-full text-center text-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Type your answer..." />
+  
+  <button onclick="checkSpelling()" class="bg-purple-500 text-white px-4 py-2 mt-4 rounded hover:bg-purple-600 transition">
+    ✅ Check
+  </button>
+
+  <div class="mt-4">
+    <button onclick="newSpelling()" class="text-sm text-blue-500 hover:underline">🔁 New Word</button>
+  </div>
+
+  <div id="spelling-result" class="text-xl mt-6 font-bold hidden"></div>
+</div>
+
+<script>
+    // 🎵 Audio Setup
+    const correctSound = new Audio("{% static 'sounds/correct.mp3' %}");
+    const wrongSound = new Audio("{% static 'sounds/wronganswer.mp3' %}");
+
+    // Fallback to WAV if MP3 fails
+    correctSound.addEventListener('error', () => {
+        console.warn("MP3 not supported, falling back to WAV for correct sound");
+        correctSound.src = "{% static 'sounds/correct.wav' %}";
+        correctSound.load();
+    });
+
+    wrongSound.addEventListener('error', () => {
+        console.warn("MP3 not supported, falling back to WAV for wrong sound");
+        wrongSound.src = "{% static 'sounds/wronganswer.wav' %}";
+        wrongSound.load();
+    });
+
+    // 🎵 Safe sound player
+    function playSound(sound) {
+        if (!sound) return;
+        const clone = sound.cloneNode();
+        clone.volume = 0.4;
+        clone.play().catch(err => {
+            console.warn("🔇 Sound playback prevented:", err.message);
+        });
+    }
+
+    // 🎈 Create floating balloons
+    function createBalloons() {
+        const container = document.body;
+        if (!container) return;
+
+        for (let i = 0; i < 8; i++) {
+            setTimeout(() => {
+                const balloon = document.createElement('div');
+                balloon.className = 'floating-balloon';
+                
+                const emojis = ['🎈', '🎉', '🎊', '⭐', '🏆', '✅', '✨'];
+                balloon.innerHTML = emojis[Math.floor(Math.random() * emojis.length)];
+
+                const startX = Math.random() * 100;
+                balloon.style.setProperty('--start-x', startX);
+
+                const offset = (Math.random() - 0.5) * 4;
+                balloon.style.setProperty('--offset', offset);
+
+                const duration = 2 + Math.random() * 3;
+                balloon.style.animationDuration = `${duration}s`;
+
+                container.appendChild(balloon);
+
+                setTimeout(() => {
+                    if (balloon && balloon.parentNode) {
+                        balloon.remove();
+                    }
+                }, duration * 1000 + 100);
+            }, i * 150);
+        }
+    }
+
+    // 🎯 Game Logic
+    let currentWord = null;
+
+    function loadSpellingGame() {
+        const url = "{% url 'get_random_spelling' %}" + (window.location.search || '');
+        fetch(url)
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+                currentWord = data;
+                document.getElementById("spelling-input").value = "";
+                document.getElementById("spelling-result").classList.add("hidden");
+
+                document.getElementById("spelling-image").innerHTML = data.image
+                    ? `<img src="${data.image}" class="h-32 mx-auto rounded shadow" />`
+                    : `<div class="text-6xl">🔤</div>`;
+
+                // Play audio if available
+                if (data.audio) {
+                    const audio = new Audio(data.audio);
+                    audio.play().catch(err => {
+                        console.warn("Audio playback failed:", err.message);
+                    });
+                }
+
+                // Focus input for better UX
+                setTimeout(() => {
+                    const input = document.getElementById("spelling-input");
+                    if (input) input.focus();
+                }, 100);
+            })
+            .catch(err => {
+                console.error("Failed to load spelling word:", err);
+                document.getElementById("spelling-image").innerHTML = `<p class="text-red-500">Failed to load. Try again.</p>`;
+            });
+    }
+
+    function newSpelling() {
+        loadSpellingGame();
+    }
+
+    function checkSpelling() {
+        const input = document.getElementById('spelling-input').value.trim().toLowerCase();
+        const result = document.getElementById('spelling-result');
+
+        // ✅ Normalize comparison — trim & lowercase both sides
+        const normalizedInput = input;
+        const normalizedCorrect = currentWord.word.trim().toLowerCase();
+
+        if (normalizedInput === normalizedCorrect) {
+            playSound(correctSound);
+            let html = `<div class="text-green-600 pop-animation">🎉 Correct!</div>`;
+            if (currentWord.explanation) {
+                html += `<div class="mt-2 text-gray-700 text-sm">${currentWord.explanation}</div>`;
+            }
+            result.innerHTML = html;
+            result.className = "text-xl mt-6 font-bold";
+            result.classList.remove("hidden");
+            createBalloons();
+            submitGameScore('spelling', 1);
+        } else {
+            playSound(wrongSound);
+            let html = `<div class="text-red-600">❌ Try again! The correct spelling is: <strong>${currentWord.word}</strong></div>`;
+            if (currentWord.explanation) {
+                html += `<div class="mt-2 text-gray-700 text-sm">${currentWord.explanation}</div>`;
+            }
+            result.innerHTML = html;
+            result.className = "text-xl mt-6 font-bold";
+            result.classList.remove("hidden");
+        }
+    }
+
+    // 📊 Submit score without redirect
+    function submitGameScore(gameType, score) {
+        const levelId = new URLSearchParams(window.location.search).get('level');
+        const formData = new FormData();
+        formData.append('game_type', gameType);
+        formData.append('score', score);
+        formData.append('level_id', levelId || '');
+
+        fetch("{% url 'submit_game' %}", {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                console.log('✅ Score submitted successfully');
+                // 🚫 NO REDIRECT
+            } else {
+                console.error('❌ Failed to submit score');
+            }
+        })
+        .catch(err => {
+            console.error('⚠️ Error submitting score:', err);
+        });
+    }
+
+    // 🚀 Initialize
+    document.addEventListener("DOMContentLoaded", () => {
+        correctSound.load();
+        wrongSound.load();
+        loadSpellingGame();
+    });
 </script>
 {% endblock %}
